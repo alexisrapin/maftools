@@ -30,6 +30,7 @@
 #' @param rightBarVline Draw vertical lines at these values. Default `NULL`.
 #' @param rightBarVlineCol Line color for `rightBarVline` Default gray70
 #' @param logColBar Plot top bar plot on log10 scale. Default \code{FALSE}.
+#' @param colBarTitle Plot top bar plot on log10 scale. Default TMB or log10 if logColBar is \code{TRUE}.
 #' @param includeColBarCN Whether to include CN in column bar plot. Default TRUE
 #' @param clinicalFeatures columns names from `clinical.data` slot of \code{MAF} to be drawn in the plot. Default NULL.
 #' @param annotationColor  Custom colors to use for `clinicalFeatures`. Must be a named list containing a named vector of colors. Default NULL. See example for more info.
@@ -110,7 +111,7 @@ oncoplot = oncoplot = function(maf, top = 20, minMut = NULL, genes = NULL, alter
                                drawRowBar = TRUE, drawColBar = TRUE,
                                leftBarData = NULL, leftBarLims = NULL, leftBarVline = NULL, leftBarVlineCol = 'gray70',
                                rightBarData = NULL, rightBarLims = NULL,rightBarVline = NULL, rightBarVlineCol = 'gray70',
-                               topBarData = NULL, topBarLims = NULL, topBarHline = NULL, topBarHlineCol = 'gray70', logColBar = FALSE, includeColBarCN = TRUE,
+                               topBarData = NULL, topBarLims = NULL, topBarHline = NULL, topBarHlineCol = 'gray70', logColBar = FALSE, colBarTitle = 'TMB', includeColBarCN = TRUE,
                                clinicalFeatures = NULL, annotationColor = NULL, annotationDat = NULL,
                                pathways = NULL, topPathways = 3,path_order = NULL, selectedPathways = NULL, collapsePathway = FALSE, pwLineCol = "#535c68", pwLineWd = 1, draw_titv = FALSE, titv_col = NULL,
                                showTumorSampleBarcodes = FALSE, tsbToPIDs = NULL, barcode_mar = 4, barcodeSrt = 90, gene_mar = 5,
@@ -531,7 +532,7 @@ oncoplot = oncoplot = function(maf, top = 20, minMut = NULL, genes = NULL, alter
     if(logColBar){
       mtext(text = "(log10)", side = 2, line = 2, cex = 0.6)
     }else{
-      mtext(text = "TMB", side = 2, line = 2, cex = 0.6)
+      mtext(text = colBarTitle, side = 2, line = 2, cex = 0.6)
     }
     if(!is.null(topBarHline)){
       abline(h = topBarHline, lty = 2, col = topBarHlineCol, xpd = FALSE)

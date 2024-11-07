@@ -122,6 +122,8 @@ oncoplot(
 
 \item{logColBar}{Plot top bar plot on log10 scale. Default \code{FALSE}.}
 
+\item{colBarTitle}{Plot top bar plot on log10 scale. Default TMB or log10 if logColBar is \code{TRUE}.}
+
 \item{includeColBarCN}{Whether to include CN in column bar plot. Default TRUE}
 
 \item{clinicalFeatures}{columns names from `clinical.data` slot of \code{MAF} to be drawn in the plot. Default NULL.}

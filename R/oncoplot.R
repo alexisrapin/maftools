@@ -690,8 +690,8 @@ oncoplot = oncoplot = function(maf, top = 20, minMut = NULL, genes = NULL, alter
 
   nm = t(apply(numMat, 2, rev))
   nm[nm == 0] = NA
-  image(x = 1:nrow(nm), y = 1:ncol(nm), z = nm, axes = FALSE, xaxt="n", yaxt="n",
-        xlab="", ylab="", col = "white") #col = "#FC8D62"
+  image(x = c(1, nrow(nm)), y = c(1, ncol(nm)), z = nm, axes = FALSE, xaxt="n", yaxt="n",
+        xlab="", ylab="", col = bgCol)
   #Plot for all variant classifications
   vc_codes_temp = vc_codes[!vc_codes %in% om$cnvc]
   for(i in 2:length(names(vc_codes_temp))){
@@ -710,7 +710,7 @@ oncoplot = oncoplot = function(maf, top = 20, minMut = NULL, genes = NULL, alter
   #Add blanks
   nm = t(apply(numMat, 2, rev))
   nm[nm != 0] = NA
-  image(x = 1:nrow(nm), y = 1:ncol(nm), z = nm, axes = FALSE, xaxt="n", yaxt="n", xlab="", ylab="", col = bgCol, add = TRUE)
+  #image(x = 1:nrow(nm), y = 1:ncol(nm), z = nm, axes = FALSE, xaxt="n", yaxt="n", xlab="", ylab="", col = bgCol, add = TRUE)
 
 
   #Add CNVs if any

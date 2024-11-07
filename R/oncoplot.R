@@ -690,7 +690,7 @@ oncoplot = oncoplot = function(maf, top = 20, minMut = NULL, genes = NULL, alter
 
   nm = t(apply(numMat, 2, rev))
   nm[nm == 0] = NA
-  image(x = c(1, nrow(nm)), y = c(1, ncol(nm)), z = nm, axes = FALSE, xaxt="n", yaxt="n",
+  image(x = c(1, nrow(nm)), y = c(1, ncol(nm)), axes = FALSE, xaxt="n", yaxt="n",
         xlab="", ylab="", col = bgCol)
   #Plot for all variant classifications
   vc_codes_temp = vc_codes[!vc_codes %in% om$cnvc]

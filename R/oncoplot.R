@@ -86,6 +86,8 @@
 #' @param showTitle Default TRUE
 #' @param titleText Custom title. Default `NULL`
 #' @param showPct Default TRUE. Shows percent altered to the right side of the plot.
+#' @param showCount Default TRUE. Shows count of altered to the right side of the plot.
+#' @param plotBgCol Background color for the entire plot. Default white. Use NA for transparent background.
 #' @returns Invisibly returns a list with components
 #' 1. `oncomatrix` A matrix used for drawing the oncoplot. Values are numeric coded for each variant classification
 #' 2. `vc_legend` A mapping of variant classification to numeric values in the oncomatrix
@@ -122,7 +124,8 @@ oncoplot = oncoplot = function(maf, top = 20, minMut = NULL, genes = NULL, alter
                                genesToIgnore = NULL, removeNonMutated = FALSE, fill = TRUE, cohortSize = NULL,
                                colors = NULL, cBioPortal = FALSE, bgCol = "#ecf0f1", borderCol = 'white', annoBorderCol = NA, numericAnnoCol = NULL,
                                drawBox = FALSE, fontSize = 0.8, SampleNamefontSize = 1, titleFontSize = 1.5, legendFontSize = 1.2, annotationFontSize = 1.2,
-                               sepwd_genes = 0.5, sepwd_samples = 0.25, writeMatrix = FALSE, colbar_pathway = FALSE, showTitle = TRUE, titleText = NULL, showPct = TRUE){
+                               sepwd_genes = 0.5, sepwd_samples = 0.25, writeMatrix = FALSE, colbar_pathway = FALSE, showTitle = TRUE, titleText = NULL, showPct = TRUE, showCount = TRUE,
+                               plotBgCol = "white"){
 
 
   #Total samples
@@ -334,6 +337,7 @@ oncoplot = oncoplot = function(maf, top = 20, minMut = NULL, genes = NULL, alter
 
   gene_sum = apply(numMat, 1, function(x) length(x[x!=0]))
   percent_alt = paste0(round(100*(apply(numMat, 1, function(x) length(x[x!=0]))/totSamps)), "%")
+  number_alt = apply(numMat, 1, function(x) length(x[x!=0]))
 
   nonmut_samps = colnames(numMat)[!colnames(numMat) %in% rownames(samp_sum)]
   if(length(nonmut_samps) > 0){
@@ -458,6 +462,9 @@ oncoplot = oncoplot = function(maf, top = 20, minMut = NULL, genes = NULL, alter
     mat_origin = mat_origin[rownames(numMat), colnames(numMat), drop = FALSE]
   }
 
+  if(! is.na(plotBgCol)){
+    par(bg = plotBgCol)
+  }
   #Plot layout
   plot_layout(clinicalFeatures = clinicalFeatures, drawRowBar = drawRowBar, anno_height = anno_height,
               drawColBar = drawColBar, draw_titv = draw_titv, exprsTbl = leftBarData, legend_height = legend_height)
@@ -495,14 +502,22 @@ oncoplot = oncoplot = function(maf, top = 20, minMut = NULL, genes = NULL, alter
     }
   }
 
+  # set right margin for main matrix as well as top bar plot, titv and clinical annotations
+  rightMargin = 4
+  if(drawRowBar){
+    rightMargin = rightMargin - 2
+    if(showPct){
+      rightMargin = rightMargin + 1
+    }
+    if(showCount){
+      rightMargin = rightMargin + 2
+    }
+  }
+
   #02: Draw top bar plot
   if(drawColBar & is.null(topBarData)){
     top_bar_data = top_bar_data[,colnames(numMat), drop = FALSE]
-    if(drawRowBar){
-      par(mar = c(0.25 , gene_mar, 2, 3), xpd = TRUE)
-    }else{
-      par(mar = c(0.25 , gene_mar, 2, 5), xpd = TRUE)
-    }
+    par(mar = c(0.25 , gene_mar, 2, rightMargin), xpd = TRUE)
 
     if(logColBar){
       top_bar_data = apply(top_bar_data, 2, function(x) {
@@ -540,11 +555,8 @@ oncoplot = oncoplot = function(maf, top = 20, minMut = NULL, genes = NULL, alter
     }
   }else if(!is.null(topBarData) & drawColBar){
     # Draw extra clinical data in top
-    if(drawRowBar){
-      par(mar = c(0.25 , gene_mar, 2, 3), xpd = TRUE)
-    }else{
-      par(mar = c(0.25 , gene_mar, 2, 5), xpd = TRUE)
-    }
+    par(mar = c(0.25 , gene_mar, 2, rightMargin), xpd = TRUE)
+
 
     if(is.data.frame(topBarData)){
       extdata = data.table::copy(x = topBarData)
@@ -667,31 +679,30 @@ oncoplot = oncoplot = function(maf, top = 20, minMut = NULL, genes = NULL, alter
 
   #04: Draw the main matrix
   if(showTumorSampleBarcodes){
-    if(!drawRowBar & !drawColBar){
-      par(mar = c(barcode_mar, gene_mar, 2.5, 5), xpd = TRUE)
-    }else if(!drawRowBar & drawColBar){
-      par(mar = c(barcode_mar, gene_mar, 0, 5), xpd = TRUE)
-    }else if(drawRowBar & !drawColBar){
-      par(mar = c(barcode_mar, gene_mar, 2.5, 3), xpd = TRUE)
-    } else{
-      par(mar = c(barcode_mar, gene_mar, 0, 3), xpd = TRUE)
+    if(!drawColBar){
+      par(mar = c(barcode_mar, gene_mar, 2.5, rightMargin), xpd = TRUE)
+    }else{
+      par(mar = c(barcode_mar, gene_mar, 0, rightMargin), xpd = TRUE)
     }
   }else{
-    if(!drawRowBar & !drawColBar){
-      par(mar = c(0.5, gene_mar, 2.5, 5), xpd = TRUE)
-    }else if(!drawRowBar & drawColBar){
-      par(mar = c(0.5, gene_mar, 0, 5), xpd = TRUE)
-    }else if(drawRowBar & !drawColBar){
-      par(mar = c(0.5, gene_mar, 2.5, 3), xpd = TRUE)
-    } else{
-      par(mar = c(0.5, gene_mar, 0, 3), xpd = TRUE)
+    if(!drawColBar){
+      par(mar = c(0.5, gene_mar, 2.5, rightMargin), xpd = TRUE)
+    }else{
+      par(mar = c(0.5, gene_mar, 0, rightMargin), xpd = TRUE)
     }
   }
-
+  
   nm = t(apply(numMat, 2, rev))
   nm[nm == 0] = NA
+
+  # Draw a blank matrix to set dimensions
   image(x = 1:nrow(nm), y = 1:ncol(nm), z = nm, axes = FALSE, xaxt="n", yaxt="n",
         xlab="", ylab="", col = "white")
+
+  # Add a background
+  usr <- par("usr")
+  rect(usr[1], usr[3], usr[2], usr[4], col = bgCol, border = NA)
+
   #Plot for all variant classifications
   vc_codes_temp = vc_codes[!vc_codes %in% om$cnvc]
   for(i in 2:length(names(vc_codes_temp))){
@@ -784,6 +795,9 @@ oncoplot = oncoplot = function(maf, top = 20, minMut = NULL, genes = NULL, alter
     percent_alt = rev(paste0(apply(nm, 2, function(x){
       round(length(x[is.na(x)])/totSamps * 100)
     }), "%"))
+    number_alt = rev(apply(nm, 2, function(x){
+      length(x[is.na(x)])
+    }))
   }
 
   #Draw if any additional features are requested
@@ -885,9 +899,21 @@ oncoplot = oncoplot = function(maf, top = 20, minMut = NULL, genes = NULL, alter
 
   mtext(text = colnames(nm), side = 2, at = 1:ncol(nm),
         font = 3, line = 0.4, cex = fontSize, las = 2)
-  if(showPct){
-    mtext(text = rev(percent_alt), side = 4, at = 1:ncol(nm),
-          font = 1, line = 0.4, cex = fontSize, las = 2, adj = 0.15)
+  
+
+  if(showPct && showCount){
+    side_text = paste(rev(percent_alt), rev(number_alt))
+  } else {
+    if(showPct){
+      side_text = rev(percent_alt)
+    }
+    if(showCount){
+      side_text = rev(number_alt)
+    }
+  }
+  if(showCount || showPct){
+    mtext(text = side_text, side = 4, at = 1:ncol(nm),
+          font = 1, line = 0.4, cex = fontSize, las = 2, adj = 0.12)
   }
 
   if(showTumorSampleBarcodes){
@@ -1035,11 +1061,8 @@ oncoplot = oncoplot = function(maf, top = 20, minMut = NULL, genes = NULL, alter
       plot.new()
     }
 
-    if(!drawRowBar){
-      par(mar = c(0, gene_mar, 0, 5), xpd = TRUE)
-    }else{
-      par(mar = c(0, gene_mar, 0, 3), xpd = TRUE)
-    }
+
+    par(mar = c(0, gene_mar, 0, rightMargin), xpd = TRUE)
 
     image(x = 1:nrow(annotation), y = 1:ncol(annotation), z = matrix(data = 0, nrow = nrow(annotation), ncol = ncol(annotation)),
           axes = FALSE, xaxt="n", yaxt="n", bty = "n",
@@ -1100,11 +1123,7 @@ oncoplot = oncoplot = function(maf, top = 20, minMut = NULL, genes = NULL, alter
      plot.new()
     }
 
-    if(!drawRowBar){
-      par(mar = c(0, gene_mar, 0, 5), xpd = TRUE)
-    }else{
-      par(mar = c(0, gene_mar, 0, 3), xpd = TRUE)
-    }
+    par(mar = c(0, gene_mar, 0, rightMargin), xpd = TRUE)
 
 
     plot(x = NA, y = NA, type = "n", xlim = c(0,ncol(titv_dat)), ylim = c(0, 100),

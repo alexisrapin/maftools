@@ -17,6 +17,7 @@
 #' @param altered Default FALSE. Chooses top genes based on muatation status. If \code{TRUE} chooses top genes based alterations (CNV or mutation).
 #' @param drawColBar logical plots top barplot for each sample. Default \code{TRUE}.
 #' @param drawRowBar logical. Plots righ barplot for each gene. Default \code{TRUE}.
+#' @param addRowBarTotal logical. Add total counts at the bar tips. Default \code{TRUE}.
 #' @param leftBarData Data for leftside barplot. Must be a data.frame with two columns containing gene names and values. Default `NULL`
 #' @param leftBarLims limits for `leftBarData`. Default `NULL`.
 #' @param leftBarVline Draw vertical lines at these values. Default `NULL`.
@@ -30,7 +31,7 @@
 #' @param rightBarVline Draw vertical lines at these values. Default `NULL`.
 #' @param rightBarVlineCol Line color for `rightBarVline` Default gray70
 #' @param logColBar Plot top bar plot on log10 scale. Default \code{FALSE}.
-#' @param colBarTitle Plot top bar plot on log10 scale. Default TMB or log10 if logColBar is \code{TRUE}.
+#' @param colBarTitle Top bar plot y axis title. Default TMB, or log10 if logColBar is \code{TRUE}.
 #' @param includeColBarCN Whether to include CN in column bar plot. Default TRUE
 #' @param clinicalFeatures columns names from `clinical.data` slot of \code{MAF} to be drawn in the plot. Default NULL.
 #' @param annotationColor  Custom colors to use for `clinicalFeatures`. Must be a named list containing a named vector of colors. Default NULL. See example for more info.
@@ -86,7 +87,6 @@
 #' @param showTitle Default TRUE
 #' @param titleText Custom title. Default `NULL`
 #' @param showPct Default TRUE. Shows percent altered to the right side of the plot.
-#' @param showCount Default TRUE. Shows count of altered to the right side of the plot.
 #' @param plotBgCol Background color for the entire plot. Default white. Use NA for transparent background.
 #' @returns Invisibly returns a list with components
 #' 1. `oncomatrix` A matrix used for drawing the oncoplot. Values are numeric coded for each variant classification
@@ -110,7 +110,7 @@
 #' @seealso \code{\link{pathways}}
 #' @export
 oncoplot = oncoplot = function(maf, top = 20, minMut = NULL, genes = NULL, altered = FALSE,
-                               drawRowBar = TRUE, drawColBar = TRUE,
+                               drawRowBar = TRUE, addRowBarTotal = TRUE, drawColBar = TRUE,
                                leftBarData = NULL, leftBarLims = NULL, leftBarVline = NULL, leftBarVlineCol = 'gray70',
                                rightBarData = NULL, rightBarLims = NULL,rightBarVline = NULL, rightBarVlineCol = 'gray70',
                                topBarData = NULL, topBarLims = NULL, topBarHline = NULL, topBarHlineCol = 'gray70', logColBar = FALSE, colBarTitle = 'TMB', includeColBarCN = TRUE,
@@ -124,7 +124,7 @@ oncoplot = oncoplot = function(maf, top = 20, minMut = NULL, genes = NULL, alter
                                genesToIgnore = NULL, removeNonMutated = FALSE, fill = TRUE, cohortSize = NULL,
                                colors = NULL, cBioPortal = FALSE, bgCol = "#ecf0f1", borderCol = 'white', annoBorderCol = NA, numericAnnoCol = NULL,
                                drawBox = FALSE, fontSize = 0.8, SampleNamefontSize = 1, titleFontSize = 1.5, legendFontSize = 1.2, annotationFontSize = 1.2,
-                               sepwd_genes = 0.5, sepwd_samples = 0.25, writeMatrix = FALSE, colbar_pathway = FALSE, showTitle = TRUE, titleText = NULL, showPct = TRUE, showCount = TRUE,
+                               sepwd_genes = 0.5, sepwd_samples = 0.25, writeMatrix = FALSE, colbar_pathway = FALSE, showTitle = TRUE, titleText = NULL, showPct = TRUE,
                                plotBgCol = "white"){
 
 
@@ -508,9 +508,6 @@ oncoplot = oncoplot = function(maf, top = 20, minMut = NULL, genes = NULL, alter
     rightMargin = rightMargin - 2
     if(showPct){
       rightMargin = rightMargin + 1
-    }
-    if(showCount){
-      rightMargin = rightMargin + 2
     }
   }
 
@@ -900,19 +897,8 @@ oncoplot = oncoplot = function(maf, top = 20, minMut = NULL, genes = NULL, alter
   mtext(text = colnames(nm), side = 2, at = 1:ncol(nm),
         font = 3, line = 0.4, cex = fontSize, las = 2)
   
-
-  if(showPct && showCount){
-    side_text = paste(rev(percent_alt), rev(number_alt))
-  } else {
-    if(showPct){
-      side_text = rev(percent_alt)
-    }
-    if(showCount){
-      side_text = rev(number_alt)
-    }
-  }
-  if(showCount || showPct){
-    mtext(text = side_text, side = 4, at = 1:ncol(nm),
+  if(showPct){
+    mtext(text = rev(percent_alt), side = 4, at = 1:ncol(nm),
           font = 1, line = 0.4, cex = fontSize, las = 2, adj = 0.12)
   }
 
@@ -949,17 +935,23 @@ oncoplot = oncoplot = function(maf, top = 20, minMut = NULL, genes = NULL, alter
 
   #05: Draw right side barplot
   if(drawRowBar){
+
+    rowBarRightMargin = 1
+    if(addRowBarTotal){
+      rowBarRightMargin = 3
+    }
+
     if(showTumorSampleBarcodes){
-      if(!drawRowBar || !drawColBar){
-        par(mar = c(barcode_mar, 0, 2.5, 1), xpd = TRUE)
+      if(!drawColBar){
+        par(mar = c(barcode_mar, 0, 2.5, rowBarRightMargin), xpd = TRUE)
       }else{
-        par(mar = c(barcode_mar, 0, 0, 1), xpd = TRUE)
+        par(mar = c(barcode_mar, 0, 0, rowBarRightMargin), xpd = TRUE)
       }
     }else{
-      if(!drawRowBar || !drawColBar){
-        par(mar = c(0.5, 0, 2.5, 1), xpd = TRUE)
+      if(!drawColBar){
+        par(mar = c(0.5, 0, 2.5, rowBarRightMargin), xpd = TRUE)
       }else{
-        par(mar = c(0.5, 0, 0, 1), xpd = TRUE)
+        par(mar = c(0.5, 0, 0, rowBarRightMargin), xpd = TRUE)
       }
     }
 
@@ -978,6 +970,12 @@ oncoplot = oncoplot = function(maf, top = 20, minMut = NULL, genes = NULL, alter
         if(length(x) > 0){
           rect(ybottom = i-1, xleft = c(0, cumsum(x)[1:(length(x)-1)]), ytop = i-0.1,
                xright = cumsum(x), col = vc_col[vc_codes[names(x)]], border = NA, lwd = 0)
+        }
+
+        # add total count
+        if(addRowBarTotal){
+          total_count = sum(x)
+          text(x = total_count, y = i - 0.5, labels = total_count, pos = 4, cex = 0.9)
         }
       }
       if(!is.null(rightBarVline)){
